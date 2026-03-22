@@ -9,6 +9,7 @@ https://github.com/unitreerobotics/unitree_sdk2
 
 **2. Clone and run the install script** (handles MuJoCo, system packages, Python deps, and builds the workspace):
 ```bash
+conda deactivate   # must use system Python, not conda
 cd <your_ws>/src
 git clone git@github.com:ETHZ-RobotX/a2_ros.git --recursive
 bash a2_ros/install.sh

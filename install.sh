@@ -27,6 +27,20 @@ echo "MuJoCo    : ${MUJOCO_VERSION}"
 echo ""
 
 # ---------------------------------------------------------------
+# Conda guard — ROS2 build must use system Python, not conda
+# ---------------------------------------------------------------
+if [ -n "$CONDA_DEFAULT_ENV" ] && [ "$CONDA_DEFAULT_ENV" != "base" ]; then
+    warn "Conda environment '${CONDA_DEFAULT_ENV}' is active."
+    warn "ROS2 colcon build requires system Python 3.12, not conda Python."
+    if ask_yn "Deactivate conda and continue?"; then
+        conda deactivate
+    else
+        error "Aborting. Run 'conda deactivate' first, then re-run install.sh."
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------
 # Submodules
 # ---------------------------------------------------------------
 info "Initialising git submodules..."
@@ -118,25 +132,9 @@ if [ ! -d "/opt/unitree_robotics" ]; then
 fi
 
 # ---------------------------------------------------------------
-# Colcon package discovery symlinks
-# colcon stops recursing into a directory once it finds a package.xml,
-# so packages inside a2_ros/external/ are never discovered. Symlinks
-# from the workspace src/ root make each package visible as a top-level entry.
+# Ignore unitree_ros2 example package (not needed, would fail to build)
 # ---------------------------------------------------------------
-info "Creating colcon discovery symlinks in workspace src/..."
-create_link() {
-    local target="$1"
-    local link="$WS_ROOT/src/$(basename "$target")"
-    [ -L "$link" ] && rm "$link"
-    ln -s "$target" "$link"
-    info "  src/$(basename "$target") -> $target"
-}
-create_link "$SCRIPT_DIR/external/a2_description"
-create_link "$SCRIPT_DIR/external/a2_locomotion_controller"
-create_link "$SCRIPT_DIR/external/a2_mujoco"
-create_link "$SCRIPT_DIR/external/unitree_ros2/cyclonedds_ws/src/unitree/unitree_go"
-create_link "$SCRIPT_DIR/external/unitree_ros2/cyclonedds_ws/src/unitree/unitree_hg"
-create_link "$SCRIPT_DIR/external/unitree_ros2/cyclonedds_ws/src/unitree/unitree_api"
+touch "$SCRIPT_DIR/external/unitree_ros2/example/COLCON_IGNORE"
 
 # ---------------------------------------------------------------
 # Patch unitree message packages for ROS2 Jazzy
