@@ -4,6 +4,6 @@
 # Build runs first so the install is fresh before setup.sh sources it.
 # restart: unless-stopped in compose keeps this alive on crashes.
 set -e
-colcon build --packages-up-to a2_pc2
+colcon build --packages-up-to a2_pc2 a2_ros
 source /a2_ros/scripts/setup.sh
 exec ros2 launch a2_pc2 pc2.launch.py
