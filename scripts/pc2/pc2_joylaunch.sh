@@ -11,8 +11,22 @@
 # on disconnect — only this script can bring it back up.
 set -e
 
-MAC="D4:2F:4B:58:84:33"
-COMPOSE_FILE="$(dirname "$(realpath "$0")")/../../compose.pc2.yaml"
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+COMPOSE_FILE="$SCRIPT_DIR/../../compose.pc2.yaml"
+
+# Load .env from the repo root (same directory as compose.pc2.yaml) if present.
+ENV_FILE="$(dirname "$COMPOSE_FILE")/.env"
+if [ -f "$ENV_FILE" ]; then
+  # shellcheck source=/dev/null
+  set -o allexport; source "$ENV_FILE"; set +o allexport
+fi
+
+# CONTROLLER_MAC must be set in .env or the environment.
+if [ -z "${CONTROLLER_MAC:-}" ]; then
+  echo "ERROR: CONTROLLER_MAC is not set. Define it in $ENV_FILE or the environment." >&2
+  exit 1
+fi
+MAC="$CONTROLLER_MAC"
 DC="docker compose -f $COMPOSE_FILE"
 
 cleanup() {
